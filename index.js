@@ -1,7 +1,7 @@
 const canvas = document.querySelector('canvas');
 const ctx = canvas.getContext('2d');
 
-const dim = 20;
+const dim = 30;
 const tileSize = 30 * 2;
 canvas.width = dim * tileSize;
 canvas.height = dim * tileSize;
@@ -36,10 +36,10 @@ class Tile {
 
 let tiles = [];
 
-tiles[0] = new Tile('./tiles/buildings/0.png', ["0", "0", "0", "0"]);//sky
-tiles[1] = new Tile('./tiles/buildings/0.png', ["1", "0", "1", "0"]);//sky that connects to buildings
-tiles[2] = new Tile('./tiles/buildings/1.png', ["1", "2", "1", "2"]);//building
-tiles[3] = new Tile('./tiles/buildings/2.png', ["2", "2", "2", "2"]);//window
+// tiles[0] = new Tile('./tiles/buildings/0.png', ["0", "0", "0", "0"]);//sky
+// tiles[1] = new Tile('./tiles/buildings/0.png', ["1", "0", "1", "0"]);//sky that connects to buildings
+// tiles[2] = new Tile('./tiles/buildings/1.png', ["1", "2", "1", "2"]);//building
+// tiles[3] = new Tile('./tiles/buildings/2.png', ["2", "2", "2", "2"]);//window
 
 // tiles[0] = new Tile('./tiles/test/0.png', ["0", "0", "0", "0"]);
 // tiles[1] = new Tile('./tiles/test/1.png', ["0", "1", "2", "1"]);
@@ -70,17 +70,17 @@ tiles[3] = new Tile('./tiles/buildings/2.png', ["2", "2", "2", "2"]);//window
 //     }
 // }
 
-// tiles[0] = new Tile(`./tiles/0.png`, ["AAA", "AAA", "AAA", "AAA"]);
-// tiles[1] = new Tile(`./tiles/1.png`, ["ABA", "ABA", "AAA", "ABA"]);
-// tiles[2] = tiles[1].rotate(1);
-// tiles[3] = tiles[1].rotate(2);
-// tiles[4] = tiles[1].rotate(3);
+tiles[0] = new Tile(`./tiles/0.png`, ["AAA", "AAA", "AAA", "AAA"]);
+tiles[1] = new Tile(`./tiles/1.png`, ["ABA", "ABA", "AAA", "ABA"]);
+tiles[2] = tiles[1].rotate(1);
+tiles[3] = tiles[1].rotate(2);
+tiles[4] = tiles[1].rotate(3);
 // tiles[5] = new Tile(`./tiles/3.png`, ["AAA", "ABA", "AAA", "ABA"]);
 // tiles[6] = tiles[5].rotate(1);
-// tiles[5] = new Tile(`./tiles/2.png`, ["ABA", "AAA", "AAA", "AAA"]);
-// tiles[6] = tiles[5].rotate(1);
-// tiles[7] = tiles[5].rotate(2);
-// tiles[8] = tiles[5].rotate(3);
+tiles[5] = new Tile(`./tiles/2.png`, ["ABA", "AAA", "AAA", "AAA"]);
+tiles[6] = tiles[5].rotate(1);
+tiles[7] = tiles[5].rotate(2);
+tiles[8] = tiles[5].rotate(3);
 
 class Cell {
     constructor(index, options = [...tiles]) {
