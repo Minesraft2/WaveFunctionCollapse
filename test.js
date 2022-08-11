@@ -4,7 +4,7 @@ class Tile {
         this.img.src = src;
     }
 }
-/* const { PATH_START, PATH, GRASS, TREES, PATH_END } = {
+const { PATH_START, PATH, GRASS, TREES, PATH_END } = {
     PATH_START: 0,
     PATH: 1,
     GRASS: 2,
@@ -24,32 +24,15 @@ const input = [
     [2, 3, 3, 3, 2],
     [2, 3, 3, 2, 2],
     [0, 1, 1, 4, 2],
-]; */
-const { SKY, GRASS, DIRT } = {
-    SKY: 0,
-    GRASS: 1,
-    DIRT: 2
-}
-const IMAGES = {
-    [SKY]: new Tile('./Tiles/test/0.png'),
-    [GRASS]: new Tile('./Tiles/test/1.png'),
-    [DIRT]: new Tile('./Tiles/test/2.png')
-}
-const input = [
-    [0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0],
-    [1, 1, 1, 1, 1],
-    [2, 2, 2, 2, 2],
-    [2, 2, 2, 2, 2]
-]
+];
 
-// random(Object.values(IMAGES)).img.onload = animate;
+random(Object.values(IMAGES)).img.onload = animate;
 const tiles = [...new Set(input.flat())];
-const OUTPUT_SIZE = 10;
+const OUTPUT_SIZE = 16;
 const IMAGE_SIZE = 32;
 
 const weights = Object.fromEntries(tiles.map(x => [x, input.flat().filter(y => y === x).length]));
-const patternMap = input || createPatternMap(input);
+const patternMap = createPatternMap(input);
 
 const patterns = {};
 
@@ -90,7 +73,7 @@ function animate() {
     if (!randomCell) return console.log("No more cells!");
     propagate(randomCell, true);
     drawOutput();
-    //requestAnimationFrame(animate);
+    requestAnimationFrame(animate);
 }
 
 
