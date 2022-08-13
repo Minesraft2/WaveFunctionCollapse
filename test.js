@@ -4,27 +4,47 @@ class Tile {
         this.img.src = src;
     }
 }
-const { PATH_START, PATH, GRASS, TREES, PATH_END } = {
-    PATH_START: 0,
-    PATH: 1,
-    GRASS: 2,
-    TREES: 3,
-    PATH_END: 4
+// const { PATH_START, PATH, GRASS, TREES, PATH_END } = {
+//     PATH_START: 0,
+//     PATH: 1,
+//     GRASS: 2,
+//     TREES: 3,
+//     PATH_END: 4
+// }
+// const IMAGES = {
+//     [PATH_START]: new Tile('./Tiles/test/pathStart.png'),
+//     [PATH]: new Tile('./Tiles/test/path.png'),
+//     [GRASS]: new Tile('./Tiles/test/grass.png'),
+//     [TREES]: new Tile('./Tiles/test/trees.png'),
+//     [PATH_END]: new Tile('./Tiles/test/pathEnd.png'),
+// }
+// const input = [
+//     [2, 2, 2, 2, 2],
+//     [2, 3, 3, 3, 2],
+//     [2, 3, 3, 3, 2],
+//     [2, 3, 3, 2, 2],
+//     [0, 1, 1, 4, 2],
+// ];
+
+const { BLANK, T1, T2, T3, T4 } = {
+    BLANK: 0,
+    T1: 1,
+    T2: 2,
+    T3: 3,
+    T4: 4,
 }
+
 const IMAGES = {
-    [PATH_START]: new Tile('./Tiles/test/pathStart.png'),
-    [PATH]: new Tile('./Tiles/test/path.png'),
-    [GRASS]: new Tile('./Tiles/test/grass.png'),
-    [TREES]: new Tile('./Tiles/test/trees.png'),
-    [PATH_END]: new Tile('./Tiles/test/pathEnd.png'),
+    [BLANK]: new Tile('./Tiles/0.png'),
+    [T1]: new Tile('./Tiles/1.png'),
+    [T2]: new Tile('./Tiles/4.png'),
+    [T3]: new Tile('./Tiles/5.png'),
+    [T4]: new Tile('./Tiles/6.png'),
 }
+
 const input = [
-    [2, 2, 2, 2, 2],
-    [2, 3, 3, 3, 2],
-    [2, 3, 3, 3, 2],
-    [2, 3, 3, 2, 2],
-    [0, 1, 1, 4, 2],
-];
+    [0, 1, 2, 3, 4]
+]
 
 random(Object.values(IMAGES)).img.onload = animate;
 const tiles = [...new Set(input.flat())];
@@ -34,7 +54,7 @@ const IMAGE_SIZE = 32;
 const weights = Object.fromEntries(tiles.map(x => [x, input.flat().filter(y => y === x).length]));
 const patternMap = createPatternMap(input);
 
-const patterns = {};
+let patterns = {};
 
 for (let tile of tiles) {
     patterns[tile] = { up: new Set(), down: new Set(), left: new Set(), right: new Set() };
@@ -47,6 +67,39 @@ for (let tile of tiles) {
             if (col > 0) patterns[tile].left.add(patternMap[row][col - 1]);
             if (col < patternMap[row].length - 1) patterns[tile].right.add(patternMap[row][col + 1]);
         }
+}
+
+patterns = {
+    "0": {
+        up: new Set([1, 0]),
+        down: new Set([3, 0]),
+        left: new Set([4, 0]),
+        right: new Set([2, 0]),
+    },
+    "1": {
+        up: new Set([2, 3, 4]),
+        down: new Set([0, 3]),
+        left: new Set([1, 2, 3]),
+        right: new Set([1, 3, 4]),
+    },
+    "2": {
+        up: new Set([2, 3, 4]),
+        down: new Set([1, 2, 4]),
+        left: new Set([0, 4]),
+        right: new Set([1, 3, 4]),
+    },
+    "3": {
+        up: new Set([0, 1]),
+        down: new Set([1, 2, 4]),
+        left: new Set([1, 2, 3]),
+        right: new Set([1, 3, 4]),
+    },
+    "4": {
+        up: new Set([2, 3, 4]),
+        down: new Set([1, 2, 4]),
+        left: new Set([1, 2, 3]),
+        right: new Set([0, 2]),
+    }
 }
 
 function createPatternMap(arr) {
@@ -64,8 +117,14 @@ class Cell {
     }
 }
 
-const output = new Array(OUTPUT_SIZE * OUTPUT_SIZE).fill(0).map((x, i) => new Cell(i));
+let output = new Array(OUTPUT_SIZE * OUTPUT_SIZE).fill(0).map((x, i) => new Cell(i));
+let frame;
 onclick = animate;
+onclick = () => {
+    output = new Array(OUTPUT_SIZE * OUTPUT_SIZE).fill(0).map((x, i) => new Cell(i));
+    cancelAnimationFrame(frame);
+    animate();
+}
 
 function animate() {
     const filtered = output.filter(x => !x.collapsed).sort((a, b) => a.options.length - b.options.length).filter((v, i, a) => v.options.length == a[0].options.length);
@@ -73,7 +132,7 @@ function animate() {
     if (!randomCell) return console.log("No more cells!");
     propagate(randomCell, true);
     drawOutput();
-    requestAnimationFrame(animate);
+    frame = requestAnimationFrame(animate);
 }
 
 
@@ -167,8 +226,8 @@ function drawOutput() {
         const [x, y] = [index % OUTPUT_SIZE, Math.floor(index / OUTPUT_SIZE)];
         ctx.save();
         ctx.translate(x * IMAGE_SIZE, y * IMAGE_SIZE);
-        ctx.globalAlpha = 1 / cell.options.length;
-        cell.options.forEach(opt => {
+        cell.options.forEach((opt, i) => {
+            ctx.globalAlpha = i == 0 ? 1 : 1 / cell.options.length;
             ctx.drawImage(IMAGES[opt].img, 0, 0, IMAGE_SIZE, IMAGE_SIZE)
         });
         // ctx.strokeRect(0, 0, IMAGE_SIZE, IMAGE_SIZE)

@@ -20,21 +20,38 @@ const IMAGES = {
 }
 const input = [
     [2, 2, 2, 2, 2],
-    [2, 2, 3, 2, 2],
-    [2, 3, 3, 2, 2],
-    [2, 3, 2, 2, 2],
+    [2, 3, 3, 3, 2],
+    [2, 3, 3, 3, 2],
+    [2, 3, 3, 3, 2],
     [0, 1, 1, 4, 2]
 ];
 
+// const { SKY, BUILDING, WINDOW } = {
+//     SKY: 0,
+//     BUILDING: 1,
+//     WINDOW: 2
+// }
+// const IMAGES = {
+//     [SKY]: new Tile('./tiles/buildings/0.png'),
+//     [BUILDING]: new Tile('./tiles/buildings/1.png'),
+//     [WINDOW]: new Tile('./tiles/buildings/2.png')
+// }
+// const input =
+//     `
+// 22222
+// 21112
+// 21012
+// 21112
+// 22222`.split('\n').map(x => x.split('').map(Number)).filter(x => x.length);
 const patternSize = 2;
-
+const patternOffset = patternSize - 1
 random(Object.values(IMAGES)).img.onload = animate;
 const tiles = [...new Set(input.flat())];
-const OUTPUT_SIZE = 10;
+const OUTPUT_SIZE = 16;
 const IMAGE_SIZE = 32;
 
 const weights = Object.fromEntries(tiles.map(x => [x, input.flat().filter(y => y === x).length]));
-const patternMap = createPatternMap(input, Math.min(patternSize, input.length) - 1);
+const patternMap = /* [...input].map(x => [...x])// */createPatternMap(input, patternOffset);
 
 const patterns = {};
 
@@ -57,7 +74,7 @@ let patternMatrix = new Set();
 for (let y = 0; y < input.length; y++)
     for (let x = 0; x < input[y].length; x++) {
         const pattern = new Array(patternSize).fill(0).map((row, i) => {
-            return [...patternMap[patternSize - 1 + i + y]].slice(x + patternSize - 1, patternSize + (x + patternSize - 1));
+            return [...patternMap[patternOffset + i + y]].slice(x + patternOffset, patternSize + (x + patternOffset));
         });
         patternMatrix.add(JSON.stringify(pattern));
     }
@@ -81,8 +98,14 @@ class Cell {
     }
 }
 
-const output = new Array(OUTPUT_SIZE * OUTPUT_SIZE).fill(0).map((x, i) => new Cell(i));
+let output = new Array(OUTPUT_SIZE * OUTPUT_SIZE).fill(0).map((x, i) => new Cell(i));
+let frame;
 onclick = animate;
+onclick = () => {
+    output = new Array(OUTPUT_SIZE * OUTPUT_SIZE).fill(0).map((x, i) => new Cell(i));
+    cancelAnimationFrame(frame);
+    animate();
+}
 
 function animate() {
     const filtered = output.filter(x => !x.collapsed).sort((a, b) => a.patterns.length - b.patterns.length).filter((v, i, a) => v.patterns.length == a[0].patterns.length);
@@ -90,32 +113,46 @@ function animate() {
     if (randomCell == null) return console.log("No more cells!")
     collapse(randomCell, true);
     drawOutput(indexToPos(randomCell.index));
-    // requestAnimationFrame(animate);
+    frame = requestAnimationFrame(animate);
 }
 
 const compare = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 function checkOverlap(origin, target, dir) {
     switch (dir) {
-        case 'up': return compare(origin[0], target[target.length - 1]);
-        case 'down': return compare(origin[origin.length - 1], target[0]);
-        case 'left': return compare(origin.flatMap(x => x[0]), target.flatMap(x => x[x.length - 1]));
-        case 'right': return compare(origin.flatMap(x => x[x.length - 1]), target.flatMap(x => x[0]));
+        case 'up': {
+            const res = new Array(patternSize - 1).fill(0).map((x, i) => {
+                return compare(origin[0], target[target.length - 1]);
+            });
+            return res.some(Boolean);
+        }
+        case 'down': {
+            const res = new Array(patternSize - 1).fill(0).map((x, i) => {
+                return compare(origin[origin.length - 1], target[0]);
+            });
+            return res.some(Boolean);
+        }
+        case 'left': {
+            const res = compare(origin.flatMap(x => x[0]), target.flatMap(x => x[x.length - 1]));
+            return res;
+        }
+        case 'right': {
+            const res = compare(origin.flatMap(x => x[x.length - 1]), target.flatMap(x => x[0]));
+            return res;
+        }
         default: return false;
     }
 }
 
-function collapse(originCell, Collapse = false) {
-    let toCollapse = Collapse;
+function collapse(originCell, toCollapse = false) {
     const randomPattern = toCollapse ? [random(originCell.patterns)] : [...originCell.patterns];
     const { x, y } = indexToPos(originCell.index);
     const grid = [...output];
     if (toCollapse) originCell.patterns = originCell.patterns.filter(pattern => randomPattern.some(ptn => compare(pattern, ptn)));
     // UP
-    toCollapse = true;
     if (y > 0 && !grid[posToIndex({ x, y: y - 1 })].collapsed) {
         const target = grid[posToIndex({ x, y: y - 1 })];
         const targetLength = target.patterns.length;
-        if (toCollapse) target.patterns = target.patterns.filter(pattern => originCell.patterns.some(ptn => checkOverlap(ptn, pattern, 'down')));
+        target.patterns = target.patterns.filter(pattern => originCell.patterns.some(ptn => checkOverlap(ptn, pattern, 'down')));
         if (targetLength !== target.patterns.length) {
             collapse(target);
         }
@@ -124,7 +161,7 @@ function collapse(originCell, Collapse = false) {
     if (y < OUTPUT_SIZE - 1 && !grid[posToIndex({ x, y: y + 1 })].collapsed) {
         const target = grid[posToIndex({ x, y: y + 1 })];
         const targetLength = target.patterns.length;
-        if (toCollapse) target.patterns = target.patterns.filter(pattern => originCell.patterns.some(ptn => checkOverlap(ptn, pattern, 'up')));
+        target.patterns = target.patterns.filter(pattern => originCell.patterns.some(ptn => checkOverlap(ptn, pattern, 'up')));
         if (targetLength !== target.patterns.length) {
             collapse(target);
         }
@@ -133,7 +170,7 @@ function collapse(originCell, Collapse = false) {
     if (x > 0 && !grid[posToIndex({ x: x - 1, y })].collapsed) {
         const target = grid[posToIndex({ x: x - 1, y })];
         const targetLength = target.patterns.length;
-        if (toCollapse) target.patterns = target.patterns.filter(pattern => originCell.patterns.some(ptn => checkOverlap(ptn, pattern, 'left')));
+        target.patterns = target.patterns.filter(pattern => originCell.patterns.some(ptn => checkOverlap(ptn, pattern, 'left')));
         if (targetLength !== target.patterns.length) {
             collapse(target);
         }
@@ -142,7 +179,7 @@ function collapse(originCell, Collapse = false) {
     if (x < OUTPUT_SIZE - 1 && !grid[posToIndex({ x: x + 1, y })].collapsed) {
         const target = grid[posToIndex({ x: x + 1, y })];
         const targetLength = target.patterns.length;
-        if (toCollapse) target.patterns = target.patterns.filter(pattern => originCell.patterns.some(ptn => checkOverlap(ptn, pattern, 'right')));
+        target.patterns = target.patterns.filter(pattern => originCell.patterns.some(ptn => checkOverlap(ptn, pattern, 'right')));
         if (targetLength !== target.patterns.length) {
             collapse(target);
         }
@@ -199,8 +236,8 @@ function drawOutput(pos) {
         const [x, y] = [index % OUTPUT_SIZE, Math.floor(index / OUTPUT_SIZE)];
         ctx.save();
         ctx.translate(x * IMAGE_SIZE, y * IMAGE_SIZE);
-        ctx.globalAlpha = 1 / cell.patterns.length;
         cell.patterns.forEach((pattern, i) => {
+            ctx.globalAlpha = 1 / (i && cell.patterns.length);
             for (let y = 0; y < pattern.length; y++)
                 for (let x = 0; x < pattern[y].length; x++) {
                     const ptn = IMAGES[pattern[y][x]];

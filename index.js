@@ -77,10 +77,10 @@ tiles[3] = tiles[1].rotate(2);
 tiles[4] = tiles[1].rotate(3);
 // tiles[5] = new Tile(`./tiles/3.png`, ["AAA", "ABA", "AAA", "ABA"]);
 // tiles[6] = tiles[5].rotate(1);
-tiles[5] = new Tile(`./tiles/2.png`, ["ABA", "AAA", "AAA", "AAA"]);
-tiles[6] = tiles[5].rotate(1);
-tiles[7] = tiles[5].rotate(2);
-tiles[8] = tiles[5].rotate(3);
+// tiles[5] = new Tile(`./tiles/2.png`, ["ABA", "AAA", "AAA", "AAA"]);
+// tiles[6] = tiles[5].rotate(1);
+// tiles[7] = tiles[5].rotate(2);
+// tiles[8] = tiles[5].rotate(3);
 
 class Cell {
     constructor(index, options = [...tiles]) {
@@ -106,40 +106,21 @@ function animate() {
             let index = x + y * dim;
             let cell = grid[index];
             ctx.save();
-            ctx.globalAlpha = 1 / 1 || cell.options.length
+            ctx.globalAlpha = 1 / cell.options.length
             ctx.translate(x * tileSize, y * tileSize)
-            if (cell.collapsed) {
-                let drawTile = cell.options[0];
+            cell.options.forEach(drawTile => {
                 if (drawTile.rotation !== 0) {
                     ctx.translate(tileSize / 2, tileSize / 2)
                     ctx.rotate(drawTile.rotation);
                     ctx.drawImage(drawTile.img, -tileSize / 2, -tileSize / 2, tileSize, tileSize);
                 } else ctx.drawImage(drawTile.img, 0, 0, tileSize, tileSize);
-            } else {
-                ctx.fillStyle = `rgba(128, 0, 255, ${cell.options.length / tiles.length})`
-                ctx.font = '30px Ariel';
-                ctx.fillRect(0, 0, tileSize, tileSize);
-                ctx.fillStyle = "black"
-                ctx.fillText(cell.options.length, tileSize / 3, tileSize / 1.5, tileSize);
-                /* cell.options.forEach(tile => {
-                    // ctx.fillStyle = 'black';
-                    // ctx.fillRect(0, 0, tileSize, tileSize);
-                    if (tile.rotation !== 0) {
-                        ctx.translate(tileSize / 2, tileSize / 2)
-                        ctx.rotate(tile.rotation);
-                        ctx.drawImage(tile.img, -tileSize / 2, -tileSize / 2, tileSize, tileSize);
-                        ctx.rotate(-tile.rotation);
-                        ctx.translate(-tileSize / 2, -tileSize / 2)
-                    } else ctx.drawImage(tile.img, 0, 0, tileSize, tileSize);
-                    //ctx.strokeRect(0, 0, tileSize, tileSize);
-                }); */
-            }
+            });
             ctx.restore();
             ctx.strokeStyle = "white";
             ctx.lineWidth = 5;
             if (window.showGrid) ctx.strokeRect(x * tileSize, y * tileSize, tileSize, tileSize);
         }
-    if (false &&window.testIndex) {
+    if (false && window.testIndex) {
         ctx.strokeStyle = "red";
         ctx.strokeRect(testIndex?.x * tileSize, (testIndex?.y - 1) * tileSize, tileSize, tileSize);
 
